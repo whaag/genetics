@@ -12,7 +12,7 @@ const short max_weight = 15;
 char* generateCandidate(struct Item *items);
 short totalWeight(struct Item* items, char* candidate);
 short totalValue(struct Item* items, char* candidate);
-
+char* cross(char* candidateA, char* candidateB);
 
 int main(void) {
 	struct Item itemA, itemB, itemC, itemD,
@@ -108,4 +108,12 @@ short totalValue(struct Item* items, char* candidate) {
         }
 
         return total;
+}
+
+char* cross(char* candidateA, char* candidateB) {
+	time_t t;
+        srand((unsigned) time(&t));
+	char* child = malloc(8 * sizeof(char));
+	for (int i = 0; i < 8; i++) {
+	}		
 }
