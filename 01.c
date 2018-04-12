@@ -53,8 +53,11 @@ int main(void) {
         candidates[i] = generateCandidate(items);
     }
     char crossControl[20];
-    for (int i = 0; i < 1; i++) {
-        char children[10];
+    short BestOverallValue = 0;
+    short BestOverallWeight = 0;
+    int bestGeneration = 0;
+    for (int i = 0; i < 20; i++) {
+        char* children[10];
         for (int j = 0; j < 20; j++) {
             crossControl[j] = 0;
         }
@@ -62,7 +65,7 @@ int main(void) {
         short candidatesCrossed = 0;
         short childrenIndex = 0;
 
-        while (candidatesCrossed < 10) {
+        while (candidatesCrossed < 20) {
             const int indexA = rand() % 20;
             const int indexB = rand() % 20;
 
@@ -72,20 +75,32 @@ int main(void) {
                 candidatesCrossed += 2;
 
                 char *childCandidate = cross(candidates[indexA], candidates[indexB]);
+
                 children[childrenIndex] = childCandidate;
                 childrenIndex += 1;
             }
         }
 
-        short best = 0;
-        short secondBest = 0;
+        short best = -1;
+        short secondBest = -1;
         short worst = 99;
-        short indexBest = 0;
-        short indexSecondBest = 0;
-        short indexWorst = 0;
+        short indexBest = -1;
+        short indexSecondBest = -1;
+        short indexWorst = -1;
         for (int j = 0; j < 10; j++ ) {
+            // for (int k = 0; k < 8; k++) {
+            //     printf("%d ",children[j][k]);
+            // }
+            // printf("\n");
             const short totalValues = totalValue(items, children[j]);
             const short totalWeights = totalWeight(items, children[j]);
+
+            if (totalValues > BestOverallValue && totalWeights <= max_weight) {
+                BestOverallValue = totalValues;
+                BestOverallWeight = totalWeights;
+                bestGeneration = i;
+            }
+
             if (totalValues > best & totalWeights <= max_weight) {
                 secondBest = best;
                 indexSecondBest = indexBest;
@@ -100,8 +115,33 @@ int main(void) {
             }
         }
 
-        printf("Best %d, SecondBest %d, Worst %d\n",indexBest, indexSecondBest, indexWorst);
+        int broughtFromPast = 0;
+        if (totalWeight(items, children[indexBest]) <= max_weight) {
+            candidates[0] = children[indexBest];
+            broughtFromPast += 1;
+        }
+        if (totalWeight(items, children[indexSecondBest]) <= max_weight) {
+            candidates[1] = children[indexSecondBest];
+            broughtFromPast += 1;
+        }
+        if (totalWeight(items, children[indexWorst]) <= max_weight) {
+            candidates[2] = children[indexWorst];
+            broughtFromPast += 1;
+        }
+        printf("Generation %d \n", i);
+        printf("Best Value: %d Weight: %d \n", totalValue(items, children[indexBest]), totalWeight(items, children[indexBest]));
+        printf("Sec  Value: %d Weight: %d \n", totalValue(items, children[indexSecondBest]), totalWeight(items, children[indexSecondBest]));
+        printf("Dive Value: %d Weight: %d \n", totalValue(items, children[indexWorst]), totalWeight(items, children[indexWorst]));
+        printf("===========================================================\n");
+        
+        for (int y = broughtFromPast; y < 20; y++) {
+            candidates[y] = generateCandidate(items);
+        }    
     }
+
+    printf("Best found in Generation %d\n", bestGeneration);
+    printf("Value:  %d\n", BestOverallValue);
+    printf("Weight: %d\n", BestOverallWeight);
 
     return 0;
 }
@@ -116,18 +156,19 @@ char* generateCandidate(struct Item *items) {
         tried[i] = 0;
     }
 
-    while (sumOfAllIndexes < 36) {
+    for (int i = 0; i < 8; i++) {
+    //while (sumOfAllIndexes < 36) {
         const int item = rand() % 8;
-        if (tried[item] == 0) {
+        // if (tried[item] == 0) {
             if ((weightsSum + items[item].weight) < 16) {
                 generated[item] = 1;
                 weightsSum += items[item].weight;
             }
             sumOfAllIndexes += item + 1;
             tried[item] = 1;
-        }
+        // }
     }
-
+    
     return generated;
 }
 
@@ -154,9 +195,13 @@ short totalValue(struct Item* items, char* candidate) {
 }
 
 char* cross(char* candidateA, char* candidateB) {
+
     char* child = malloc(8 * sizeof(char));
     for (int i = 0; i < 8; i++) {
-        if (!i & 1) {
+        child[i] = 0;
+    }
+    for (int i = 0; i < 8; i++) {
+        if (!(i & 1)) {
             child[i] = candidateA[i];
         } else {
             child[i] = candidateB[i];
