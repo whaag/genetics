@@ -15,7 +15,7 @@ public class Main {
         }
 
         for (Candidate candidate : candidates) {
-            System.out.println("Weight: "+candidate.getTotalWeight()+" Value: "+candidate.getTotalValue());
+            System.out.println();
         }
     }
 }
